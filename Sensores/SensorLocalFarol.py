@@ -1,7 +1,7 @@
 from Sensores.Sensor_Interface import Sensor_Interface
 from Observacao import Observacao
 
-class Sensor_LocalFarol(Sensor_Interface):
+class SensorLocalFarol(Sensor_Interface):
     def __init__(self):
         super().__init__()
 

@@ -28,10 +28,10 @@ class Agente_Interface(ABC):
 
     def instala(self,sensor: 'Sensor'):
         self.sensores.append(sensor)
-
+    
     
 
     #(mensagem string e Agente de_agente)
-    @abstractmethod
-    def comunica(self,msg: str,de_agente: 'Agente_Interface'):
-        pass
+    #@abstractmethod
+    #def comunica(self,msg: str,de_agente: 'Agente_Interface'):
+        #pass
