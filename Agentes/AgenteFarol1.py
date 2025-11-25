@@ -7,10 +7,9 @@ class AgenteFarol1(Agente_Interface):
         super().__init__()
         pass
 
+    #def
 
     def observacao(self,observacao):
-        for sensor in self.sensores:
-            observacao = sensor.filtrar(observacao)
         self.observacaofinal = observacao
         pass
 
@@ -18,8 +17,9 @@ class AgenteFarol1(Agente_Interface):
         pass
 
     def age(self):
-        dx,dy = self.observacaofinal("direção")
-        return Acao("andar",{"dx": dx,"dy": dy})
+
+        dx,dy = self.observacaofinal.dados["direcao"]
+        return Acao("andar",dx=dx,dy=dy)
 
     def avaliacao_estado_atual(self,recompensa: float):
 
