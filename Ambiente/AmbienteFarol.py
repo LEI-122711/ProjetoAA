@@ -33,21 +33,11 @@ class AmbienteFarol(Ambient_Interface):
             "farol": (fx,fy)
         })
 
-<<<<<<< HEAD
     '''
     Recebe a ação escolhida pelo agente e executa no ambiente -> extrai as coordenadas do deslocamento
     da ação, calcula a nova posição, impede que o agente saia dos limites do ambiente e atualiza a posição do agente
     emk self.posicoes
     '''
-=======
-        for sensor in Agente.sensores:
-            obs = sensor.filtrar(obs)
-
-        #Agente.observacao(obs)
-
-        return obs
-
->>>>>>> b16f01c6118bdbf643deebf165be016a00e09f27
     def agir(self,Acao,Agente):
 
         ax,ay = self.posicoes[Agente]
@@ -60,23 +50,9 @@ class AmbienteFarol(Ambient_Interface):
 
         self.posicoes[Agente] = (x,y)
 
-<<<<<<< HEAD
     # Incremnete ao contador self.time
-=======
-        fx,fy = self.farol
-
-        if(x,y) == (fx,fy):
-            return 100,True
-
-        return 0,False
-
-
-
-
->>>>>>> b16f01c6118bdbf643deebf165be016a00e09f27
     def atualizacao(self):
         self.time += 1
-<<<<<<< HEAD
         if self.time > 10:
             self.time = 0
         pass
@@ -93,5 +69,3 @@ class AmbienteFarol(Ambient_Interface):
             return 1.0
         return -0.01   
    
-=======
->>>>>>> b16f01c6118bdbf643deebf165be016a00e09f27
