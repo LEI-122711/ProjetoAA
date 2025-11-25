@@ -16,18 +16,26 @@ class AgenteFarol1(Agente_Interface):
         super().__init__()
         pass
 
+<<<<<<< HEAD
     def cria(self, ficheiro: str):
         pass
+=======
+    #def
+>>>>>>> b16f01c6118bdbf643deebf165be016a00e09f27
 
     def observacao(self,observacao):
-        for sensor in self.sensores:
-            observacao = sensor.filtrar(observacao)
         self.observacaofinal = observacao
         pass
 
     def age(self):
+<<<<<<< HEAD
         dx,dy = self.observacaofinal.dados("direção")
         return Acao("andar",{"dx": dx,"dy": dy})
+=======
+
+        dx,dy = self.observacaofinal.dados["direcao"]
+        return Acao("andar",dx=dx,dy=dy)
+>>>>>>> b16f01c6118bdbf643deebf165be016a00e09f27
 
     def avaliacao_estado_atual(self,recompensa: float):
         pass
