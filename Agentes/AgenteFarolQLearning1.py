@@ -79,7 +79,7 @@ class AgenteFarolQLearning(Agente_Interface):
         q_antigo = self.get_q_value(estado_anterior, acao_anterior)
 
         # 2. Calcular o valor máximo do novo estado max Q(s', a')
-        acoes_possiveis = ["Norte", "Sul", "Este", "Oeste","Noroeste","Nordeste","Sudeste","Sudoeste"]
+        acoes_possiveis = ["Norte", "Sul", "Este", "Oeste", "Noroeste", "Nordeste", "Sudeste", "Sudoeste"]
         max_q_novo = max([self.get_q_value(estado_novo, a) for a in acoes_possiveis])
 
         # 3. FÓRMULA Q-LEARNING

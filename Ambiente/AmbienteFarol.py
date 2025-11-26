@@ -5,47 +5,46 @@ from Acao import Acao
 
 class AmbienteFarol(Ambient_Interface):
 
-    def __init__(self,height = 10,width = 10):
+    def __init__(self, height = 10, width = 10):
         self.height = height
         self.width = width
         self.farol = (8,8)
         self.posicoes = {}
-        self.agentes = {}
+        self.agentes = []
         self.time = 0
         pass
 
-    def add_agente(self,agente,x:int,y:int):
+    def add_agente(self, agente, x:int, y:int):
        self.posicoes[agente] = (x,y)
-       self.agentes[agente] = agente
+       self.agentes.append(agente)
 
 
-    def observacaoPara(self,Agente):
-        ax,ay = self.posicoes[Agente]
+    def observacaoPara(self, agente):
+        ax,ay = self.posicoes[agente]
         fx,fy = self.farol
 
-        obs=  Observacao({
+        obs = Observacao({
             "agente": (ax,ay),
             "farol": (fx,fy)
         })
 
-        for sensor in Agente.sensores:
+        for sensor in agente.sensores:
             obs = sensor.filtrar(obs)
 
         #Agente.observacao(obs)
 
         return obs
 
-    def agir(self,Acao,Agente):
+    def agir(self, acao, agente):
+        ax,ay = self.posicoes[agente]
 
-        ax,ay = self.posicoes[Agente]
-
-        x = ax + Acao.params.get("dx",0)
-        y = ay + Acao.params.get("dy",0)
+        x = ax + acao.params.get("dx",0)
+        y = ay + acao.params.get("dy",0)
 
         x = max(0, min(self.height - 1, x))
         y = max(0, min(self.width - 1, y))
 
-        self.posicoes[Agente] = (x,y)
+        self.posicoes[agente] = (x,y)
 
         fx,fy = self.farol
 
@@ -55,10 +54,5 @@ class AmbienteFarol(Ambient_Interface):
         return 0,False
 
 
-
-
     def atualizacao(self):
-
-
-
         self.time += 1
