@@ -26,7 +26,7 @@ class Simulador:
             self.ambiente.atualizacao()
 
             self.visualizador.desenhar()
-            time.sleep(2)
+            time.sleep(0.3)
 
             todos_terminaram = True
 

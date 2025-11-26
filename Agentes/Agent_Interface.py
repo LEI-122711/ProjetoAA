@@ -20,7 +20,7 @@ class Agente_Interface(ABC):
     def age(self)-> 'Acao':  #retornar algo do tipo Ação
         pass
 
-    # a recompensa é um double (?)
+    # a recompensa é um double
     @abstractmethod
     def avaliacao_estado_atual(self, recompensa: float):
         pass

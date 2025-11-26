@@ -26,15 +26,10 @@ class AgenteFarol1(Agente_Interface):
         pass
 
     def age(self):
-        dx,dy = self.observacaofinal.dados("direção")
-        return Acao("andar",{"dx": dx,"dy": dy})
         dx,dy = self.observacaofinal.dados["direcao"]
-        return Acao("andar",dx=dx,dy=dy)
+        return Acao("andar", dx=dx, dy=dy)
 
 
     def avaliacao_estado_atual(self,recompensa: float):
-        pass
-
-    def comunica(self, msg, de_agente):
         pass
 
