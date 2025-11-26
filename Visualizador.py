@@ -1,6 +1,5 @@
 import tkinter as tk
 import time
-
 from Agentes.Agent_Interface import Agente_Interface
 
 

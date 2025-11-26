@@ -21,7 +21,7 @@ class AgenteFarol1(Agente_Interface):
         pass
 
 
-    def observacao(self,observacao):
+    def observacao(self, observacao):
         self.observacaofinal = observacao
         pass
 
