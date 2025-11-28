@@ -6,13 +6,16 @@ class SensorLocalFarol(Sensor_Interface):
         super().__init__()
 
     def filtrar(self, observacao):
-        ax, ay = observacao.dados["agente"]
-        fx, fy = observacao.dados["farol"]
+
+        novos_dados = observacao.dados.copy()
+
+        ax, ay = novos_dados["agente"]
+        fx, fy = novos_dados["farol"]
 
         dx = 1 if fx > ax else -1 if fx < ax else 0
         dy = 1 if fy > ay else -1 if fy < ay else 0
 
-        return Observacao({
-            "direcao": (dx, dy)
-        })
+        novos_dados["direcao"]=(dx, dy)
+
+        return Observacao(novos_dados)
 

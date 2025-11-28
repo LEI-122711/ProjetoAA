@@ -12,6 +12,7 @@ def testar_ambiente():
     agente = AgenteFarol1()
     sensor = SensorLocalFarol()
     amb.add_obstaculo(8,7)
+    amb.add_obstaculo(9,8)
 
     # 2. Instalação
     agente.instala(sensor)

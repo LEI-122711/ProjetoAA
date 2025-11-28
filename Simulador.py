@@ -2,11 +2,10 @@ import time
 
 from Visualizador import Visualizador
 
-
 class Simulador:
     def __init__(self, ambiente, agentes):
         self.ambiente = ambiente
-        self.agentes = agentes  # Lista de agentes
+        self.agentes = agentes
         self.passo = 0
         self.visualizador = None
         self.resultado = []
@@ -16,44 +15,40 @@ class Simulador:
 
         simulacao_ativa = True
 
-        self.visualizador = Visualizador(self.ambiente)
+        # --- CORREÇÃO 1: REMOVI A CRIAÇÃO FORÇADA ---
+        # Apaguei as linhas: if self.visualizador is None...
 
-        while simulacao_ativa :
+        # Proteção para o loop não ser infinito se os agentes se perderem
+        while simulacao_ativa and self.passo < 1000:
             self.passo += 1
-            print(f"\nPasso {self.passo}")
 
-            #atualizar se for eu quiser fazer o farol desligado
+            # Atualiza ambiente
             self.ambiente.atualizacao()
 
-            self.visualizador.desenhar()
-            time.sleep(0.3)
+            # --- CORREÇÃO 2: SÓ DESENHA SE EXISTIR VISUALIZADOR ---
+            if self.visualizador is not None:
+                self.visualizador.desenhar()
+                # time.sleep(0.1) # Podes descomentar se quiseres ver devagar
 
             todos_terminaram = True
 
             for agente in self.agentes:
-
                 obs = self.ambiente.observacaoPara(agente)
                 agente.observacao(obs)
-
                 acao = agente.age()
 
                 recompensa, terminou = self.ambiente.agir(acao, agente)
 
                 agente.avaliacao_estado_atual(recompensa)
 
-                print(f"Agente agiu: {acao.params} -> Recompensa: {recompensa}")
-
                 if not terminou:
                     todos_terminaram = False
 
-            self.visualizador.desenhar()
-            #time.sleep(0.3)
+            # --- CORREÇÃO 3: VERIFICAÇÃO FINAL ---
+            if self.visualizador is not None:
+                self.visualizador.desenhar()
 
-            # Se todos os agentes chegaram ao objetivo, paramos
             if todos_terminaram:
                 self.resultado.append(self.passo)
-                print("Todos os agentes completaram o objetivo!")
+                # print("Todos os agentes completaram o objetivo!") # Opcional: comentar para não encher a consola
                 simulacao_ativa = False
-
-            # Opcional: Pausa para visualizar
-            # time.sleep(0.5)

@@ -1,16 +1,18 @@
 from Sensores.Sensor_Interface import Sensor_Interface
 from Observacao import Observacao
 
-class SensorLocalFarol(Sensor_Interface):
-    def __init__(self,raio=2):
+class SensorProximidadeObstáculo(Sensor_Interface):
+    def __init__(self,raio=1):
         self.raio = raio
 
     def filtrar(self, observacao):
-        ax, ay = observacao.dados["agente"]
-        mapa = observacao.dados["mapa"]
+
+        novos_dados = observacao.dados.copy()
+
+        ax, ay = novos_dados["agente"]
+        mapa = novos_dados["mapa"]
         height = len(mapa)
         width = len(mapa[0])
-
 
         visao = []
 
@@ -25,11 +27,11 @@ class SensorLocalFarol(Sensor_Interface):
                     linha.append(mapa[i][j])  # Copia o valor real (0 ou 1)
             visao.append(linha)
 
+        novos_dados["visao"] = visao
+
         # O agente recebe APENAS esta matriz 3x3
-        return Observacao({
-            "visao": visao,
-            # Exemplo de saida: [[0, 0, 1], [0, 0, 0], [1, 1, 1]]
-            # Significa: Parede à direita e paredes em baixo.
-            "posicao_agente": (ax, ay)  # Opcional
-        })
+        return Observacao(novos_dados)
+
+        # Exemplo de saida: [[0, 0, 1], [0, 0, 0], [1, 1, 1]]
+        # Significa: Parede à direita e paredes em baixo.
 
