@@ -28,7 +28,7 @@ class Simulador:
             # --- CORREÇÃO 2: SÓ DESENHA SE EXISTIR VISUALIZADOR ---
             if self.visualizador is not None:
                 self.visualizador.desenhar()
-                # time.sleep(0.1) # Podes descomentar se quiseres ver devagar
+                time.sleep(0.3) # Podes descomentar se quiseres ver devagar
 
             todos_terminaram = True
 

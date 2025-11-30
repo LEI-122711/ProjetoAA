@@ -2,6 +2,7 @@ from Ambiente.AmbienteFarol import AmbienteFarol
 from Agentes.AgenteFarol1 import AgenteFarol1
 from Sensores.SensorLocalFarol import SensorLocalFarol
 from Simulador import Simulador
+from Visualizador import Visualizador
 
 
 def testar_ambiente():
@@ -11,6 +12,7 @@ def testar_ambiente():
     amb = AmbienteFarol()
     agente = AgenteFarol1()
     sensor = SensorLocalFarol()
+
     amb.add_obstaculo(8,7)
     amb.add_obstaculo(9,8)
 
@@ -20,7 +22,9 @@ def testar_ambiente():
 
     # 3. Simulação
     sim = Simulador(amb, [agente])
+    sim.visualizador = Visualizador(amb)
     sim.executar_simulacao()
+
 
 
 if __name__ == "__main__":

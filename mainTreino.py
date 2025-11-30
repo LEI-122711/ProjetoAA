@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import math
 from Ambiente.AmbienteFarol import AmbienteFarol
 from Agentes.AgenteFarolQLearning1 import AgenteQLearning
 from Sensores.SensorLocalFarol import SensorLocalFarol
@@ -27,6 +28,11 @@ def treinar():
 
     historico_passos = []
     EPISODIOS = 5000  # Quantas vezes ele vai tentar
+    target_epsilon = 0.01
+    start_epsilon = 1.0
+    decay_steps = EPISODIOS * 0.90
+
+    DECAY_RATE = math.pow(target_epsilon / start_epsilon, 1 / decay_steps)
 
     # 2. Ciclo de Episódios
     for ep in range(EPISODIOS):
@@ -35,11 +41,13 @@ def treinar():
         amb.add_obstaculo(8, 7)
         amb.add_obstaculo(7, 7)
         amb.add_obstaculo(6, 7)
+        amb.add_obstaculo(3, 3)
+        amb.add_obstaculo(2, 2)
 
         amb.add_agente(agente, x=0, y=0)
 
         # Decay do Epsilon
-        agente.epsilon = 1 - (ep + 1) / EPISODIOS
+        agente.epsilon = max(0.01, agente.epsilon * DECAY_RATE)
 
         # --- LÓGICA DE "ESPREITAR" ---
         espreitar = (ep == 0) or ((ep + 1) % 1000 == 0) or (ep == EPISODIOS - 1)
