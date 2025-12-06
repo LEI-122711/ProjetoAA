@@ -5,9 +5,9 @@ from Acao import Acao
 import json
 
 
-class AgenteFarolQLearning(Agente_Interface):
+class AgenteLabirintoQLearning(Agente_Interface):
 
-    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=1.0):
+    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=1.0, dificuldade = 1):
         super().__init__()
         # Tabela Q simples
         self.q_table = {}
@@ -15,6 +15,9 @@ class AgenteFarolQLearning(Agente_Interface):
         self.alpha = learning_rate
         self.gamma = discount_factor
         self.epsilon = exploration_rate
+
+        self.dificuldade_labirinto = dificuldade
+        self.file = "labirintoQLearning" + str(self.dificuldade_labirinto) + ".json"
 
         # 8 Direções possíveis
         self.acoes_possiveis = [
@@ -86,14 +89,18 @@ class AgenteFarolQLearning(Agente_Interface):
     def cria(self, ficheiro):
         pass
 
-    def record_data(self, ficheiro="farolQLearning_data.json"):
+    def record_data(self, ficheiro= None):
+        if ficheiro is None:
+            ficheiro = self.file
         # Temos de converter as chaves (tuplos) para strings para o JSON aceitar
         dados_str = {str(k): v for k, v in self.q_table.items()}
         with open(ficheiro, "w") as f:
             json.dump(dados_str, f)
         print(f"informação em {ficheiro}")
 
-    def load_data(self, ficheiro="farolQLearning_data.json"):
+    def load_data(self, ficheiro = None):
+        if ficheiro is None:
+            ficheiro = self.file
         try:
             with open(ficheiro, "r") as f:
                 dados_str = json.load(f)

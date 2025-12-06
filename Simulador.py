@@ -19,7 +19,7 @@ class Simulador:
         # Apaguei as linhas: if self.visualizador is None...
 
         # Proteção para o loop não ser infinito se os agentes se perderem
-        while simulacao_ativa and self.passo < 1000:
+        while simulacao_ativa and self.passo < 100:
             self.passo += 1
 
             # Atualiza ambiente
@@ -28,7 +28,7 @@ class Simulador:
             # --- CORREÇÃO 2: SÓ DESENHA SE EXISTIR VISUALIZADOR ---
             if self.visualizador is not None:
                 self.visualizador.desenhar()
-                time.sleep(0.3) # Podes descomentar se quiseres ver devagar
+                #time.sleep(0.3) # Podes descomentar se quiseres ver devagar
 
             todos_terminaram = True
 
@@ -39,10 +39,14 @@ class Simulador:
 
                 recompensa, terminou = self.ambiente.agir(acao, agente)
 
-                agente.avaliacao_estado_atual(recompensa)
+                #agente.avaliacao_estado_atual(recompensa)
+                obs_nova = self.ambiente.observacaoPara(agente)
+                agente.observacao(obs_nova)
 
                 if not terminou:
                     todos_terminaram = False
+
+                agente.avaliacao_estado_atual(recompensa)
 
             # --- CORREÇÃO 3: VERIFICAÇÃO FINAL ---
             if self.visualizador is not None:

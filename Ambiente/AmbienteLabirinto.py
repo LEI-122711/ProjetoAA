@@ -81,7 +81,7 @@ class AmbienteLabirinto(Ambient_Interface):
 
             # 4. Verificar Objetivo
         if (nx, ny) == self.fim:
-            return 100.0, True  # Terminou com sucesso
+            return 500.0, True  # Terminou com sucesso
 
         # 5. Penalizações (Reward Shaping)
         if not movimento_valido:

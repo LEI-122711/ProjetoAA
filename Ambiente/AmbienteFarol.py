@@ -1,6 +1,7 @@
 from Ambiente.Ambient_Interface import Ambient_Interface
 from Observacao import Observacao
 from Acao import Acao
+import random
 
 
 class AmbienteFarol(Ambient_Interface):
@@ -37,6 +38,31 @@ class AmbienteFarol(Ambient_Interface):
             # Não colocar parede em cima do Farol!
             if (x, y) != self.farol:
                 self.mapa[x][y] = 1
+
+    # --- NOVO MÉTODO: GERAÇÃO ALEATÓRIA ---
+    def gerar_cenario_aleatorio(self, num_obstaculos=15):
+        # 1. Limpar mapa anterior
+        self.mapa = [[0 for _ in range(self.width)] for _ in range(self.height)]
+
+        # 2. Randomizar Posição do Farol
+        # Evitamos o (0,0) porque assumimos que o agente começa lá
+        fx = random.randint(1, self.height - 1)
+        fy = random.randint(1, self.width - 1)
+        self.farol = (fx, fy)
+
+        # 3. Colocar Obstáculos Aleatórios
+        colocados = 0
+        while colocados < num_obstaculos:
+            ox = random.randint(0, self.height - 1)
+            oy = random.randint(0, self.width - 1)
+
+            # Regras para colocar obstáculo:
+            # - Não pode ser no Farol
+            # - Não pode ser no Início (0,0)
+            # - Não pode ser onde já existe um obstáculo
+            if (ox, oy) != self.farol and (ox, oy) != (0, 0) and self.mapa[ox][oy] == 0:
+                self.mapa[ox][oy] = 1
+                colocados += 1
 
     def observacaoPara(self, agente):
         ax, ay = self.posicoes[agente]
@@ -87,7 +113,7 @@ class AmbienteFarol(Ambient_Interface):
         fx, fy = self.farol
 
         if (nx, ny) == (fx, fy):
-            return 100.0, True
+            return 500.0, True
 
         # 5. Penalizações
         if not movimento_valido:
