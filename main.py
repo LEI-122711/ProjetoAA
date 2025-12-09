@@ -5,7 +5,7 @@ from Sensores.SensorLocalFarol import SensorLocalFarol
 from Sensores.SensorProximidadeObstáculo import SensorProximidadeObstáculo
 from Simulador import Simulador
 from Visualizador import Visualizador
-from Agentes.AgenteFarolQLearning1 import AgenteQLearning
+from Agentes.AgenteFarolQLearning1 import AgenteFarolQLearning
 
 
 def testar_ambiente():
@@ -13,14 +13,19 @@ def testar_ambiente():
 
     # 1. Setup
     amb = AmbienteFarol()
-    #agente = AgenteFarol1()
-    agente = AgenteQLearning()
+    agente = AgenteFarol1()
+    #agente = AgenteQLearning()
     sensor = SensorDirecaoAlvo()
     sensor2 = SensorProximidadeObstáculo()
-    agente.load_data()
+    #agente.load_data()
 
     amb.add_obstaculo(8, 7)
+    #amb.add_obstaculo(9, 7)
     amb.add_obstaculo(7, 7)
+    amb.add_obstaculo(3, 3)
+    amb.add_obstaculo(2, 3)
+    amb.add_obstaculo(1, 3)
+    amb.add_obstaculo(4, 3)
 
     # 2. Instalação
     agente.instala(sensor)

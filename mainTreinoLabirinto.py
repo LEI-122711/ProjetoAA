@@ -20,49 +20,47 @@ def get_mapa(dificuldade):
         # FÁCIL: Corredor com poucos obstáculos
         # Mapa 7x7
         mapa = [
-            [0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0, 1, 0],
             [0, 0, 0, 1, 0, 0, 0],
-            [1, 1, 0, 1, 1, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0],
             [0, 0, 0, 0, 0, 1, 0],
-            [0, 1, 1, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0]
+            [1, 1, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 0, 0, 0]
         ]
-        return mapa, (0, 0), (6, 6)
+        return mapa, (0, 0), (6, 4)
 
     elif dificuldade == 2:
-        # MÉDIO: Mais obstáculos e becos
-        # Mapa 10x10
         mapa = [
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 1, 1, 0, 1, 0, 1, 1, 1, 0],
-            [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-            [0, 1, 0, 1, 1, 1, 1, 0, 1, 0],
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],  # Caminho meio aberto
-            [1, 1, 0, 1, 0, 1, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 1, 1, 1, 1, 1, 0, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0],
+            [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],  # Caminho meio aberto
+            [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1],
+            [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
         ]
-        return mapa, (0, 0), (9, 9)
+        return mapa, (0, 0), (9, 10)
 
     elif dificuldade == 3:
-        # DIFÍCIL: Labirinto clássico (Ziguezague obrigatório)
-        # Mapa 10x10 denso
         mapa = [
-            [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-            [0, 1, 0, 1, 1, 0, 1, 0, 1, 0],
-            [0, 1, 0, 1, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 1, 0, 1, 1, 1, 1, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0, 0, 0],  # Parede grande
-            [0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
-            [0, 1, 1, 1, 0, 1, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0, 1, 0, 1, 1, 1],
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            [0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],  # Caminho meio aberto
+            [1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ]
-        return mapa, (0, 0), (9, 9)
+        return mapa, (0, 0), (10, 10)
 
     return None
 
@@ -105,7 +103,7 @@ def treinar_nivel(dificuldade, episodios):
         agente.epsilon = max(target_epsilon, agente.epsilon)
 
         # Visualizar apenas o primeiro e o último
-        espreitar = (ep == 0) or (ep == episodios - 1) or ((ep + 1) % (episodios/3) == 0)
+        espreitar = (ep == 0) or (ep == episodios - 1) #or ((ep + 1) % (episodios/3) == 0) adicionar isto se quiser ver partes do treino
 
         sim = Simulador(amb, [agente])
 
@@ -130,13 +128,13 @@ def treinar_nivel(dificuldade, episodios):
 def executar_treino_completo():
     # Podes ajustar o número de episódios por dificuldade
     # O Difícil precisa de mais tempo!
-    eps_facil = 3000
-    eps_medio = 5000
-    eps_dificil = 10000
+    eps_facil = 5000
+    eps_medio = 20000
+    eps_dificil = 20000
 
-    hist1 = treinar_nivel(1, eps_facil)
+    #hist1 = treinar_nivel(1, eps_facil)
     hist2 = treinar_nivel(2, eps_medio)
-    hist3 = treinar_nivel(3, eps_dificil)
+    #hist3 = treinar_nivel(3, eps_dificil)
 
     print("\n--- TREINOS CONCLUÍDOS ---")
 
@@ -151,9 +149,9 @@ def executar_treino_completo():
         ax.set_title(titulo)
         ax.set_ylabel("Passos")
 
-    plot_suave(ax1, hist1, "Nível 1 (Fácil)")
+    #plot_suave(ax1, hist1, "Nível 1 (Fácil)")
     plot_suave(ax2, hist2, "Nível 2 (Médio)")
-    plot_suave(ax3, hist3, "Nível 3 (Difícil)")
+    #plot_suave(ax3, hist3, "Nível 3 (Difícil)")
 
     plt.tight_layout()
     plt.show()
@@ -162,7 +160,7 @@ def executar_treino_completo():
     print("\n--- TESTE FINAL VISUAL (DIFICULDADE 3) ---")
 
     # 1. Setup Ambiente Difícil
-    mapa3, ini3, fim3 = get_mapa(3)
+    mapa3, ini3, fim3 = get_mapa(2)
     amb_final = AmbienteLabirinto(mapa3, ini3, fim3)
 
     # 2. Setup Agente Perito
@@ -171,8 +169,8 @@ def executar_treino_completo():
     agente.instala(SensorProximidadeObstáculo(raio=1))
 
     # Carregar o cérebro difícil
-    agente.dificuldade_labirinto = 3
-    agente.file = "labirintoQLearning3.json"
+    agente.dificuldade_labirinto = 2
+    agente.file = "labirintoQLearning2.json"
     agente.load_data()  # Isto já mete epsilon=0
 
     amb_final.add_agente(agente)
