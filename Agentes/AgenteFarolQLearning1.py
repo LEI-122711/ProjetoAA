@@ -16,10 +16,19 @@ class AgenteFarolQLearning(Agente_Interface):
         self.gamma = discount_factor
         self.epsilon = exploration_rate
 
-        # 8 Direções possíveis
+        self.N = (-1,0)
+        self.NE = (-1,1)
+        self.E  = (0, 1)
+        self.SE = (1, 1)
+        self.S  = (1, 0)
+        self.SW = (1, -1)
+        self.W  = (0, -1)
+        self.NW = (-1, -1)
+
+
         self.acoes_possiveis = [
-            (0, -1), (0, 1), (1, 0), (-1, 0),  # N, S, E, O
-            (1, -1), (-1, -1), (1, 1), (-1, 1)  # NE, NO, SE, SO
+            self.N, self.NE, self.E, self.SE,
+            self.S, self.SW, self.W, self.NW
         ]
 
         self.ultimo_estado = None

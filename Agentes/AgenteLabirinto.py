@@ -6,9 +6,19 @@ class AgenteLabirinto(Agente_Interface):
 
     def __init__(self):
         super().__init__()
+        self.N = (-1,0)
+        self.NE = (-1,1)
+        self.E  = (0, 1)
+        self.SE = (1, 1)
+        self.S  = (1, 0)
+        self.SW = (1, -1)
+        self.W  = (0, -1)
+        self.NW = (-1, -1)
+
+
         self.bussola_8 = [
-            (-1, 0), (-1, 1), (0, 1), (1, 1),
-            (1, 0), (1, -1), (0, -1), (-1, -1)
+            self.N, self.NE, self.E, self.SE,
+            self.S, self.SW, self.W, self.NW
         ]
         pass
 
@@ -17,23 +27,33 @@ class AgenteLabirinto(Agente_Interface):
 
     def observacao(self, observacao):
         self.observacaofinal = observacao
-        pass
+
+    def nextPlaceEmpty(selfself, visao, dx, dy):
+        x = self.cx +dx
+        y = self.cy + dy
+        if y < 0 or y >= len(visao):
+            return False
+        if x < 0 or x >= len(visao[0]):
+            return False
+
+        return visao[y][x] == 0
 
     def age(self):
-        dados = self.observacaofinal.dados
+        if self.observacaofinal is None:
+            return Acao("andar", dx=0, dy=0)
 
-        # 1. Obter dados
-        dx_ideal, dy_ideal = dados.get("direcao", (0, 0))
+        dados = self.observacaofinal.dados
         visao = dados.get("visao")
 
-        # Se já estivermos no alvo ou sem olhos
-        if (dx_ideal == 0 and dy_ideal == 0) or visao is None:
-            return Acao("andar", dx=dx_ideal, dy=dy_ideal)
+        dx_i, dy_i = dados.get("direcao", (0, 0))
 
-        # 2. Encontrar o índice inicial na nossa bússola
+        # Se já estivermos no alvo ou sem olhos
+        if (dx_i == 0 and dy_i == 0) or visao is None:
+            return Acao("andar", dx=dx_i, dy=dy_i)
+
         start_idx = 0
-        if (dx_ideal, dy_ideal) in self.bussola_8:
-            start_idx = self.bussola_8.index((dx_ideal, dy_ideal))
+        if (dx_i, dy_i) in self.bussola_8:
+            start_idx = self.bussola_8.index((dx_i, dy_i))
         else:
             # Fallback se a direção for (0,0) ou estranha
             start_idx = 0
@@ -54,7 +74,7 @@ class AgenteLabirinto(Agente_Interface):
                 pass  # Ignora se sair da matriz 3x3
 
         # Se estiver tudo bloqueado (encurralado), tenta a ideal
-        return Acao("andar", dx=dx_ideal, dy=dy_ideal)
+        return Acao("andar", dx=dx_i, dy=dy_i)
 
     def avaliacao_estado_atual(self, recompensa: float):
         pass
