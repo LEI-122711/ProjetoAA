@@ -26,7 +26,7 @@ class AgenteFarolQLearning(Agente_Interface):
         self.NW = (-1, -1)
 
 
-        self.acoes_possiveis = [
+        self.bussola = [
             self.N, self.NE, self.E, self.SE,
             self.S, self.SW, self.W, self.NW
         ]
@@ -52,13 +52,13 @@ class AgenteFarolQLearning(Agente_Interface):
 
     def get_q_valores(self, estado):
         if estado not in self.q_table:
-            self.q_table[estado] = [0.0] * len(self.acoes_possiveis)
+            self.q_table[estado] = [0.0] * len(self.bussola)
         return self.q_table[estado]
 
     def age(self):
         estado = self.get_estado_hash()
         q_valores = self.get_q_valores(estado)
-        num_acoes = len(self.acoes_possiveis)
+        num_acoes = len(self.bussola)
 
         # 1. EXPLORAÇÃO (Aleatório)
         if self.learning_mode and random.random() < self.epsilon:
@@ -74,7 +74,7 @@ class AgenteFarolQLearning(Agente_Interface):
         self.ultimo_estado = estado
         self.ultima_acao_idx = acao_idx
 
-        dx, dy = self.acoes_possiveis[acao_idx]
+        dx, dy = self.bussola[acao_idx]
         return Acao("andar", dx=dx, dy=dy)
 
     def avaliacao_estado_atual(self, recompensa: float):

@@ -6,21 +6,6 @@ class AgenteLabirinto(Agente_Interface):
 
     def __init__(self):
         super().__init__()
-        self.N = (-1,0)
-        self.NE = (-1,1)
-        self.E  = (0, 1)
-        self.SE = (1, 1)
-        self.S  = (1, 0)
-        self.SW = (1, -1)
-        self.W  = (0, -1)
-        self.NW = (-1, -1)
-
-
-        self.bussola_8 = [
-            self.N, self.NE, self.E, self.SE,
-            self.S, self.SW, self.W, self.NW
-        ]
-        pass
 
     def cria(self, ficheiro: str):
         pass
@@ -28,15 +13,19 @@ class AgenteLabirinto(Agente_Interface):
     def observacao(self, observacao):
         self.observacaofinal = observacao
 
-    def nextPlaceEmpty(selfself, visao, dx, dy):
-        x = self.cx +dx
-        y = self.cy + dy
-        if y < 0 or y >= len(visao):
+    def nextPlaceEmpty(self, visao, dx, dy):
+        cx, cy = self.cx, self.cy
+
+        nx = cx + dx
+        ny = cy + dy
+
+        # limites
+        if ny < 0 or ny >= len(visao):
             return False
-        if x < 0 or x >= len(visao[0]):
+        if nx < 0 or nx >= len(visao[0]):
             return False
 
-        return visao[y][x] == 0
+        return visao[ny][nx] == 0
 
     def age(self):
         if self.observacaofinal is None:
@@ -44,16 +33,14 @@ class AgenteLabirinto(Agente_Interface):
 
         dados = self.observacaofinal.dados
         visao = dados.get("visao")
-
         dx_i, dy_i = dados.get("direcao", (0, 0))
 
-        # Se já estivermos no alvo ou sem olhos
+        # Se já estivermos no alvo ou sem visao
         if (dx_i == 0 and dy_i == 0) or visao is None:
             return Acao("andar", dx=dx_i, dy=dy_i)
 
-        start_idx = 0
-        if (dx_i, dy_i) in self.bussola_8:
-            start_idx = self.bussola_8.index((dx_i, dy_i))
+        if (dx_i, dy_i) in self.bussola:
+            start_idx = self.bussola.index((dx_i, dy_i))
         else:
             # Fallback se a direção for (0,0) ou estranha
             start_idx = 0
@@ -62,15 +49,14 @@ class AgenteLabirinto(Agente_Interface):
         # Agora tentamos 8 vezes para cobrir o círculo completo
         for i in range(8):
             idx_atual = (start_idx + i) % 8
-            dx, dy = self.bussola_8[idx_atual]
+            dx, dy = self.bussola[idx_atual]
 
-            # Verificar na matriz de visão se esta direção está livre
-            # O agente está em [1][1].
+            # Verificar se a célula ao redor está livre
             try:
                 # Proteção de limites e verificação de parede (0 = livre)
-                if visao[1 + dx][1 + dy] == 0:
+                if self.nextPlaceEmpty(visao, dx, dy):
                     return Acao("andar", dx=dx, dy=dy)
-            except IndexError:
+            except:
                 pass  # Ignora se sair da matriz 3x3
 
         # Se estiver tudo bloqueado (encurralado), tenta a ideal

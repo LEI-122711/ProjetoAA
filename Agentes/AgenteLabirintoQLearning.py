@@ -10,65 +10,81 @@ class AgenteLabirintoQLearning(Agente_Interface):
     def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=1.0, dificuldade = 1):
         super().__init__()
         # Tabela Q simples
-        self.q_table = {}
 
         self.alpha = learning_rate
         self.gamma = discount_factor
         self.epsilon = exploration_rate
 
+        self.learning_mode = True
+
         self.dificuldade_labirinto = dificuldade
-        self.file = "labirintoQLearning" + str(self.dificuldade_labirinto) + ".json"
+        self.file = f"labirintoQLearning.{self.dificuldade_labirinto}.json"
 
-        # 8 Direções possíveis
-        self.acoes_possiveis = [
-            (0, -1), (0, 1), (1, 0), (-1, 0),  # N, S, E, O
-            (1, -1), (-1, -1), (1, 1), (-1, 1)  # NE, NO, SE, SO
-        ]
-
+        self.q_table = {}
         self.ultimo_estado = None
         self.ultima_acao_idx = None
-        self.learning_mode = True
 
     def observacao(self, observacao):
         self.observacaofinal = observacao
 
+    def cria(self, ficheiro: str):
+        pass
+
     def get_estado_hash(self):
         # Cria uma assinatura única do que o agente está a ver
         dados = self.observacaofinal.dados
+
         direcao = dados.get("direcao", (0, 0))
+        visao = dados.get("visao", None)
 
-        visao_tuple = ()
-        if "visao" in dados:
-            # Converte a matriz de visão num tuplo imutável
-            visao_tuple = tuple(tuple(linha) for linha in dados["visao"])
 
-        return (direcao, visao_tuple)
+        '''
+        Features simples -> nao aprende caminhos espeificos, ou seja, o agente aprende a 
+        evitar paredes e a mover-se nas direções que dao mais recompensa, mas nao aprende 
+        o labirinto em si; Nao memoriza caminhos e pode falhar em labirintos com becos, porque 
+        nao ve ao longe
+        
+        Tuplos -> bom para um labirinto especifico e pode encontrar um caminho muito bom com o tempo
+        mas, se mudar o labirinto ele nao reconhece nada e tem que aprender tudo de novo e a tabela
+        Q explode em tamanho
+        --> Melhor estratégia se ha uma 1 Q-table por cada mapa.
+        
+        '''
+        if visao is None:
+           visao_t = None
+        else:
+            visao_t = tuple(tuple(l) for l in visao)
+
+
+        return (direcao,visao_t)
 
     def get_q_valores(self, estado):
         if estado not in self.q_table:
-            self.q_table[estado] = [0.0] * len(self.acoes_possiveis)
+            self.q_table[estado] = [0.0] * len(self.bussola)
         return self.q_table[estado]
 
     def age(self):
         estado = self.get_estado_hash()
         q_valores = self.get_q_valores(estado)
-        num_acoes = len(self.acoes_possiveis)
 
-        # 1. EXPLORAÇÃO (Aleatório)
+        num_acoes = len(self.bussola)
+
+        #Aleatorio
         if self.learning_mode and random.random() < self.epsilon:
             acao_idx = random.randint(0, num_acoes - 1)
 
-        # 2. APROVEITAMENTO (Melhor Q-Value)
+        # Avaliar aproveitamento
         else:
             max_val = max(q_valores)
+
             # Desempate aleatório entre as melhores ações
-            melhores_indices = [i for i, v in enumerate(q_valores) if v == max_val]
-            acao_idx = random.choice(melhores_indices)
+            best = [i for i, v in enumerate(q_valores) if v == max_val]
+            acao_idx = random.choice(best)
 
         self.ultimo_estado = estado
         self.ultima_acao_idx = acao_idx
 
-        dx, dy = self.acoes_possiveis[acao_idx]
+        dx, dy = self.bussola[acao_idx]
         return Acao("andar", dx=dx, dy=dy)
 
     def avaliacao_estado_atual(self, recompensa: float):
@@ -77,23 +93,22 @@ class AgenteLabirintoQLearning(Agente_Interface):
 
         estado_antigo = self.ultimo_estado
         acao_idx = self.ultima_acao_idx
-        estado_novo = self.get_estado_hash()
+        new_estado = self.get_estado_hash()
 
-        # Atualização Q-Learning Padrão
         q_antigo = self.get_q_valores(estado_antigo)[acao_idx]
-        max_q_novo = max(self.get_q_valores(estado_novo))
+        max_q_novo = max(self.get_q_valores(new_estado))
 
-        novo_valor = q_antigo + self.alpha * (recompensa + self.gamma * max_q_novo - q_antigo)
-        self.q_table[estado_antigo][acao_idx] = novo_valor
-
-    def cria(self, ficheiro):
-        pass
+        #Formula
+        new_value = q_antigo + self.alpha * (recompensa + self.gamma * max_q_novo - q_antigo)
+        self.q_table[estado_antigo][acao_idx] = new_value
 
     def record_data(self, ficheiro= None):
         if ficheiro is None:
             ficheiro = self.file
+
         # Temos de converter as chaves (tuplos) para strings para o JSON aceitar
         dados_str = {str(k): v for k, v in self.q_table.items()}
+
         with open(ficheiro, "w") as f:
             json.dump(dados_str, f)
         print(f"informação em {ficheiro}")
