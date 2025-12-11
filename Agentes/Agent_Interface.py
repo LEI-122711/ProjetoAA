@@ -12,8 +12,7 @@ class Agente_Interface(ABC):
         pass
 
     @abstractmethod
-    def observacao(self, observacao):
-        #recebe observação
+    def observacao(self, observacao): #recebe observação
         pass
 
     @abstractmethod

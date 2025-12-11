@@ -12,13 +12,7 @@ from Visualizador import Visualizador
 # --- DEFINIÇÃO DOS MAPAS (3 DIFICULDADES) ---
 
 def get_mapa(dificuldade):
-    """
-    Retorna (mapa, inicio, fim) baseado na dificuldade.
-    0 = Livre, 1 = Parede
-    """
-    if dificuldade == 1:
-        # FÁCIL: Corredor com poucos obstáculos
-        # Mapa 7x7
+    if dificuldade == 1: #7x7
         mapa = [
             [0, 0, 0, 1, 0, 0, 0],
             [0, 1, 0, 1, 0, 1, 0],
@@ -30,13 +24,13 @@ def get_mapa(dificuldade):
         ]
         return mapa, (0, 0), (6, 4)
 
-    elif dificuldade == 2:
+    elif dificuldade == 2: #10x10 , substituir pelo 3
         mapa = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
             [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
             [0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0],
-            [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],  # Caminho meio aberto
+            [0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
             [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1],
             [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0],
             [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
@@ -46,13 +40,13 @@ def get_mapa(dificuldade):
         ]
         return mapa, (0, 0), (9, 10)
 
-    elif dificuldade == 3:
+    elif dificuldade == 3: #substituir pelo 2
         mapa = [
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0],
             [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
             [0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],  # Caminho meio aberto
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
             [1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0],
@@ -66,18 +60,15 @@ def get_mapa(dificuldade):
 
 
 def treinar_nivel(dificuldade, episodios):
-    print(f"\n=== A INICIAR TREINO: DIFICULDADE {dificuldade} ===")
+    print(f"dificuldade {dificuldade}")
 
-    # 1. Obter mapa
     matriz, inicio, fim = get_mapa(dificuldade)
 
-    # 2. Configurar Agente (Cria ficheiro novo para cada dificuldade)
     agente = AgenteLabirintoQLearning(
         learning_rate=0.1,
         discount_factor=0.9,
-        exploration_rate=1.0  # Começa sempre a explorar no novo mapa
+        exploration_rate=1.0
     )
-    # Define manualmente a dificuldade para ele gravar no ficheiro certo
     agente.dificuldade_labirinto = dificuldade
     agente.file = f"labirintoQLearning{dificuldade}.json"
 
@@ -89,26 +80,22 @@ def treinar_nivel(dificuldade, episodios):
 
     historico_passos = []
 
-    # Decaimento Linear do Epsilon
+    # LINEAR, NÃO SEI MAIS O QUE ALTERAR, FICA ASSIM POR ENQUANTO
     start_epsilon = 1.0
     target_epsilon = 0.01
 
     for ep in range(episodios):
-        # Cria ambiente novo (limpo) a cada episódio
         amb = AmbienteLabirinto(matriz, inicio, fim)
-        amb.add_agente(agente)  # Usa inicio padrão definido no ambiente
+        amb.add_agente(agente)
 
-        # Decay do Epsilon
         agente.epsilon = start_epsilon - ep * (start_epsilon - target_epsilon) / (episodios - 1)
         agente.epsilon = max(target_epsilon, agente.epsilon)
 
-        # Visualizar apenas o primeiro e o último
         espreitar = (ep == 0) or (ep == episodios - 1) #or ((ep + 1) % (episodios/3) == 0) adicionar isto se quiser ver partes do treino
 
         sim = Simulador(amb, [agente])
 
         if espreitar:
-            # print(f"👀 Dificuldade {dificuldade} | Ep {ep+1} | Eps: {agente.epsilon:.2f}")
             sim.visualizador = Visualizador(amb)
         else:
             sim.visualizador = None
@@ -116,18 +103,15 @@ def treinar_nivel(dificuldade, episodios):
         sim.executar_simulacao()
         historico_passos.append(sim.passo)
 
-        if (ep + 1) % 500 == 0:
-            print(f"Dif {dificuldade} | Ep {ep + 1}/{episodios} | Passos: {sim.passo}")
+        #if (ep + 1) % 500 == 0:
+        #    print(f"Dif {dificuldade} | Ep {ep + 1}/{episodios} | Passos: {sim.passo}")
 
-    # Guardar o cérebro deste nível
     agente.record_data()
 
     return historico_passos
 
 
 def executar_treino_completo():
-    # Podes ajustar o número de episódios por dificuldade
-    # O Difícil precisa de mais tempo!
     eps_facil = 5000
     eps_medio = 20000
     eps_dificil = 20000
@@ -136,9 +120,9 @@ def executar_treino_completo():
     hist2 = treinar_nivel(2, eps_medio)
     #hist3 = treinar_nivel(3, eps_dificil)
 
-    print("\n--- TREINOS CONCLUÍDOS ---")
+    print("treino feito")
 
-    # Mostrar Gráficos (Um por dificuldade)
+    #gráficos
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 12))
 
     def plot_suave(ax, dados, titulo):
@@ -149,6 +133,8 @@ def executar_treino_completo():
         ax.set_title(titulo)
         ax.set_ylabel("Passos")
 
+    #cada gráfico para cada treino
+
     #plot_suave(ax1, hist1, "Nível 1 (Fácil)")
     plot_suave(ax2, hist2, "Nível 2 (Médio)")
     #plot_suave(ax3, hist3, "Nível 3 (Difícil)")
@@ -156,22 +142,18 @@ def executar_treino_completo():
     plt.tight_layout()
     plt.show()
 
-    # --- TESTE FINAL (MODO PERITO - NÍVEL 3) ---
-    print("\n--- TESTE FINAL VISUAL (DIFICULDADE 3) ---")
+    print("teste final visual, apenas para ver o teste")
 
-    # 1. Setup Ambiente Difícil
     mapa3, ini3, fim3 = get_mapa(2)
     amb_final = AmbienteLabirinto(mapa3, ini3, fim3)
 
-    # 2. Setup Agente Perito
     agente = AgenteLabirintoQLearning()
     agente.instala(SensorDirecaoAlvo())
     agente.instala(SensorProximidadeObstáculo(raio=1))
 
-    # Carregar o cérebro difícil
     agente.dificuldade_labirinto = 2
     agente.file = "labirintoQLearning2.json"
-    agente.load_data()  # Isto já mete epsilon=0
+    agente.load_data()
 
     amb_final.add_agente(agente)
 

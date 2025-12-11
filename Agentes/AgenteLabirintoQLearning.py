@@ -9,7 +9,6 @@ class AgenteLabirintoQLearning(Agente_Interface):
 
     def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_rate=1.0, dificuldade = 1):
         super().__init__()
-        # Tabela Q simples
         self.q_table = {}
 
         self.alpha = learning_rate
@@ -19,7 +18,6 @@ class AgenteLabirintoQLearning(Agente_Interface):
         self.dificuldade_labirinto = dificuldade
         self.file = "labirintoQLearning" + str(self.dificuldade_labirinto) + ".json"
 
-        # 8 Direções possíveis
         self.acoes_possiveis = [
             (0, -1), (0, 1), (1, 0), (-1, 0),  # N, S, E, O
             (1, -1), (-1, -1), (1, 1), (-1, 1)  # NE, NO, SE, SO
@@ -33,13 +31,13 @@ class AgenteLabirintoQLearning(Agente_Interface):
         self.observacaofinal = observacao
 
     def get_estado_hash(self):
-        # Cria uma assinatura única do que o agente está a ver
+        #cria uma chave
         dados = self.observacaofinal.dados
         direcao = dados.get("direcao", (0, 0))
 
         visao_tuple = ()
         if "visao" in dados:
-            # Converte a matriz de visão num tuplo imutável
+            #converter a matriz de visão num tuplo imutável
             visao_tuple = tuple(tuple(linha) for linha in dados["visao"])
 
         return (direcao, visao_tuple)
@@ -54,14 +52,14 @@ class AgenteLabirintoQLearning(Agente_Interface):
         q_valores = self.get_q_valores(estado)
         num_acoes = len(self.acoes_possiveis)
 
-        # 1. EXPLORAÇÃO (Aleatório)
+        # aleatório
         if self.learning_mode and random.random() < self.epsilon:
             acao_idx = random.randint(0, num_acoes - 1)
 
-        # 2. APROVEITAMENTO (Melhor Q-Value)
+        # melhor q-value
         else:
             max_val = max(q_valores)
-            # Desempate aleatório entre as melhores ações
+            # desempate aleatório se dois tiverem o mesmo valor
             melhores_indices = [i for i, v in enumerate(q_valores) if v == max_val]
             acao_idx = random.choice(melhores_indices)
 
@@ -107,10 +105,8 @@ class AgenteLabirintoQLearning(Agente_Interface):
             # Converter strings de volta para tuplos
             # eval() é um truque rápido para converter "(1,0)" em tuplo (1,0)
             self.q_table = {eval(k): v for k, v in dados_str.items()}
-
-            # Configura logo para modo de teste
             self.learning_mode = False
             self.epsilon = 0.0
-            print("Cérebro carregado com sucesso! Modo Perito ativado.")
+            print("ficheiro encontrad")
         except FileNotFoundError:
-            print("Erro: Ficheiro de cérebro não encontrado.")
+            print("ficheiro do qlearning não encontrado")

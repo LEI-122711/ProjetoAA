@@ -16,7 +16,7 @@ class SensorDirecaoAlvo(Sensor_Interface):
         elif "saida" in novos_dados:
             fx, fy = novos_dados["saida"]
         else:
-            raise KeyError("Observação não contem nem 'farol' nem 'saida'.")
+            raise KeyError("a observação não tem o farol ou a saída, algo está mal a mandar a informação")
 
         dx = 1 if fx > ax else -1 if fx < ax else 0
         dy = 1 if fy > ay else -1 if fy < ay else 0

@@ -9,11 +9,8 @@ class AmbienteFarol(Ambient_Interface):
     def __init__(self, height=10, width=10):
         self.height = height
         self.width = width
-        self.farol = (8, 8)  # O nosso "fim" ou objetivo
+        self.farol = (8, 8)
 
-        # --- NOVIDADE: A Grelha de Obstáculos ---
-        # Cria uma matriz vazia (0 = Livre)
-        # self.mapa[x][y]
         self.mapa = [[0 for _ in range(width)] for _ in range(height)]
 
         self.posicoes = {}
@@ -21,45 +18,32 @@ class AmbienteFarol(Ambient_Interface):
         self.time = 0
 
     def add_agente(self, agente, x=None, y=None):
-        # Se não definir posição, começa no canto (0,0)
         if x is None or y is None:
             x, y = 0, 0
 
-        # Garante que não nasce em cima de uma parede
         if self.mapa[x][y] == 1:
-            print(f"AVISO: Agente tentou nascer na parede em ({x},{y})!")
+            print(f"não começar aqui, isto é um obstáculo({x},{y})")
 
         self.posicoes[agente] = (x, y)
         self.agentes.append(agente)
 
-    # Método extra para colocar paredes no Farol
     def add_obstaculo(self, x, y):
         if 0 <= x < self.height and 0 <= y < self.width:
-            # Não colocar parede em cima do Farol!
             if (x, y) != self.farol:
                 self.mapa[x][y] = 1
 
-    # --- NOVO MÉTODO: GERAÇÃO ALEATÓRIA ---
     def gerar_cenario_aleatorio(self, num_obstaculos=15):
-        # 1. Limpar mapa anterior
         self.mapa = [[0 for _ in range(self.width)] for _ in range(self.height)]
 
-        # 2. Randomizar Posição do Farol
-        # Evitamos o (0,0) porque assumimos que o agente começa lá
         fx = random.randint(1, self.height - 1)
         fy = random.randint(1, self.width - 1)
         self.farol = (fx, fy)
 
-        # 3. Colocar Obstáculos Aleatórios
         colocados = 0
         while colocados < num_obstaculos:
             ox = random.randint(0, self.height - 1)
             oy = random.randint(0, self.width - 1)
 
-            # Regras para colocar obstáculo:
-            # - Não pode ser no Farol
-            # - Não pode ser no Início (0,0)
-            # - Não pode ser onde já existe um obstáculo
             if (ox, oy) != self.farol and (ox, oy) != (0, 0) and self.mapa[ox][oy] == 0:
                 self.mapa[ox][oy] = 1
                 colocados += 1
@@ -70,8 +54,8 @@ class AmbienteFarol(Ambient_Interface):
 
         obs_data = {
             "agente": (ax, ay),
-            "farol": (fx, fy),  # Para o SensorLocalFarol (vetor)
-            "mapa": self.mapa  # Para o SensorProximidade (obstáculos)
+            "farol": (fx, fy),  #para sensordirecaoalvo
+            "mapa": self.mapa   #para sensorproximidadeobstaculo
         }
 
         obs = Observacao(obs_data)
@@ -84,42 +68,35 @@ class AmbienteFarol(Ambient_Interface):
     def agir(self, acao, agente):
         ax, ay = self.posicoes[agente]
 
-        # 1. Calcular intenção de movimento
         dx = acao.params.get("dx", 0)
         dy = acao.params.get("dy", 0)
 
         nx = ax + dx
         ny = ay + dy
 
-        # 2. Validar Movimento
         movimento_valido = True
 
-        # 2.1 Verificar Limites (Saiu do mundo?)
         if not (0 <= nx < self.height and 0 <= ny < self.width):
             movimento_valido = False
 
-        # 2.2 Verificar Obstáculos (Bateu numa parede adicionada?)
-        # Só verificamos se estiver dentro dos limites para não dar erro de índice
+        #depois alterar isto porque o fora já deve mostrar como 1
         elif self.mapa[nx][ny] == 1:
             movimento_valido = False
 
-        # 3. Atualizar Posição
         if movimento_valido:
             self.posicoes[agente] = (nx, ny)
         else:
             nx, ny = ax, ay  # Fica onde estava
 
-        # 4. Verificar Objetivo
         fx, fy = self.farol
 
         if (nx, ny) == (fx, fy):
-            return 500.0, True
+            return 100.0, True
 
-        # 5. Penalizações
         if not movimento_valido:
-            return -0.5, False  # Bateu na parede ou limite
+            return -0.5, False  #parede ou fora dos limites
 
-        return -0.1, False  # Custo normal
+        return -0.1, False
 
     def atualizacao(self):
         self.time += 1

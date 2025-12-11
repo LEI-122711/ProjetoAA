@@ -7,28 +7,24 @@ class Simulador:
         self.ambiente = ambiente
         self.agentes = agentes
         self.passo = 0
+        self.recompensa = 0
         self.visualizador = None
         self.resultado = []
 
     def executar_simulacao(self):
-        print("--- Início da Simulação ---")
+        print("a simular i guess")
 
         simulacao_ativa = True
 
-        # --- CORREÇÃO 1: REMOVI A CRIAÇÃO FORÇADA ---
-        # Apaguei as linhas: if self.visualizador is None...
 
-        # Proteção para o loop não ser infinito se os agentes se perderem
         while simulacao_ativa and self.passo < 200:
             self.passo += 1
 
-            # Atualiza ambiente
             self.ambiente.atualizacao()
 
-            # --- CORREÇÃO 2: SÓ DESENHA SE EXISTIR VISUALIZADOR ---
             if self.visualizador is not None:
                 self.visualizador.desenhar()
-                time.sleep(0.2) # Podes descomentar se quiseres ver devagar
+                #time.sleep(0.2) #alterar tempo para ver as coisas
 
             todos_terminaram = True
 
@@ -39,6 +35,8 @@ class Simulador:
 
                 recompensa, terminou = self.ambiente.agir(acao, agente)
 
+                self.recompensa += recompensa
+
                 #agente.avaliacao_estado_atual(recompensa)
                 obs_nova = self.ambiente.observacaoPara(agente)
                 agente.observacao(obs_nova)
@@ -48,11 +46,9 @@ class Simulador:
 
                 agente.avaliacao_estado_atual(recompensa)
 
-            # --- CORREÇÃO 3: VERIFICAÇÃO FINAL ---
             if self.visualizador is not None:
                 self.visualizador.desenhar()
 
             if todos_terminaram:
                 self.resultado.append(self.passo)
-                # print("Todos os agentes completaram o objetivo!") # Opcional: comentar para não encher a consola
                 simulacao_ativa = False

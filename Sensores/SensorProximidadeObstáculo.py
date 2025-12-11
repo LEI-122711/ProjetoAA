@@ -16,7 +16,6 @@ class SensorProximidadeObstáculo(Sensor_Interface):
 
         visao = []
 
-        # Percorre as células à volta do agente (ex: de x-1 a x+1)
         for i in range(ax - self.raio, ax + self.raio + 1):
             linha = []
             for j in range(ay - self.raio, ay + self.raio + 1):
@@ -24,7 +23,7 @@ class SensorProximidadeObstáculo(Sensor_Interface):
                 if i < 0 or i >= height or j < 0 or j >= width:
                     linha.append(1)
                 else:
-                    linha.append(mapa[i][j])  # Copia o valor real (0 ou 1)
+                    linha.append(mapa[i][j])
             visao.append(linha)
 
         novos_dados["visao"] = visao
