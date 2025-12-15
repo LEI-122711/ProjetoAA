@@ -1,48 +1,73 @@
 import random
 import numpy as np
 import json
+import math
 from Agentes.Agent_Interface import Agente_Interface
 from Acao import Acao
 
 
 class AgenteGenetico(Agente_Interface):
-    def __init__(self, population_size=50, mutation_rate=0.1):
+    def __init__(self, population_size=50, mutation_rate=0.15):
         super().__init__()
 
         self.observacaofinal = None
-        self.learning_mode = True  # Se True, evolui. Se False, usa o melhor.
+        self.learning_mode = True
 
-        # --- CONFIGURAÇÃO GENÉTICA ---
         self.pop_size = population_size
         self.mutation_rate = mutation_rate
         self.geracao = 1
         self.individuo_atual = 0
 
-        # Estrutura do Cérebro (Rede Simples)
-        # Inputs: 2 (GPS) + 9 (Visão 3x3) = 11
-        # Outputs: 8 (Direções possíveis)
-        self.input_size = 11
+        # --- MEMÓRIA DE EXPLORAÇÃO ---
+        self.celulas_visitadas = set()
+
+        # Inputs: 2 (GPS) + 9 (Visão) + 2 (Memória Ação) = 13
+        self.input_size = 13
+        self.hidden_size = 20
         self.output_size = 8
 
-        # A população é uma lista de matrizes de pesos (Cromossomas)
-        # Cada indivíduo é uma matriz 11x8
-        self.populacao = [np.random.uniform(-1, 1, (self.input_size, self.output_size)) for _ in range(self.pop_size)]
-        self.fitnesses = []  # Guarda a pontuação de cada um
+        self.genome_size = (self.input_size * self.hidden_size) + self.hidden_size + \
+                           (self.hidden_size * self.output_size) + self.output_size
 
-        # O Melhor de todos (para guardar/carregar)
+        self.populacao = [np.random.uniform(-1, 1, self.genome_size) for _ in range(self.pop_size)]
+        self.fitnesses = []
+
         self.melhor_cromossoma = self.populacao[0]
+        self.file = "genetico_best.json"
 
-        # 8 Direções
+        self.ultima_acao_vetor = (0, 0)
+
         self.acoes_possiveis = [
-            (0, -1), (0, 1), (1, 0), (-1, 0),  # N, S, E, O
-            (1, -1), (-1, -1), (1, 1), (-1, 1)  # NE, NO, SE, SO
+            (0, -1), (0, 1), (1, 0), (-1, 0),
+            (1, -1), (-1, -1), (1, 1), (-1, 1)
         ]
 
     def observacao(self, observacao):
         self.observacaofinal = observacao
 
+        # Registo de visitas
+        if observacao and "agente" in observacao.dados:
+            pos = observacao.dados["agente"]
+            self.celulas_visitadas.add(tuple(pos))
+
+    def decodificar_pesos(self, genoma):
+        start = 0
+        end = self.input_size * self.hidden_size
+        w1 = genoma[start:end].reshape((self.input_size, self.hidden_size))
+
+        start = end
+        end = start + self.hidden_size
+        b1 = genoma[start:end]
+
+        start = end
+        end = start + (self.hidden_size * self.output_size)
+        w2 = genoma[start:end].reshape((self.hidden_size, self.output_size))
+
+        start = end
+        b2 = genoma[start:]
+        return w1, b1, w2, b2
+
     def age(self):
-        # 1. Preparar Inputs (Achatar os sensores num array)
         if self.observacaofinal is None:
             return Acao("andar", dx=0, dy=0)
 
@@ -50,79 +75,122 @@ class AgenteGenetico(Agente_Interface):
         dx_gps, dy_gps = dados.get("direcao", (0, 0))
         visao = dados.get("visao")
 
-        # Vetor de entrada (Input Layer)
-        inputs = [dx_gps, dy_gps]
+        # Inputs
+        inputs = [np.clip(dx_gps, -1, 1), np.clip(dy_gps, -1, 1)]
 
         if visao:
-            # Achata a matriz 3x3 para uma lista de 9 números
             for linha in visao:
                 for celula in linha:
                     inputs.append(celula)
         else:
-            # Se não houver visão, enche com zeros
             inputs.extend([0] * 9)
 
-        inputs_np = np.array(inputs)  # Shape (11,)
+        inputs.append(self.ultima_acao_vetor[0])
+        inputs.append(self.ultima_acao_vetor[1])
 
-        # 2. Escolher o cérebro a usar
+        inputs_np = np.array(inputs)
+
+        # Seleção Genoma
         if self.learning_mode:
-            cromossoma = self.populacao[self.individuo_atual]
+            genoma = self.populacao[self.individuo_atual]
         else:
-            cromossoma = self.melhor_cromossoma
+            genoma = self.melhor_cromossoma
 
-        # 3. Calcular Saída (Feedforward)
-        # Produto escalar: (1, 11) dot (11, 8) = (1, 8)
-        outputs = np.dot(inputs_np, cromossoma)
+        # Feedforward
+        w1, b1, w2, b2 = self.decodificar_pesos(genoma)
+        z1 = np.dot(inputs_np, w1) + b1
+        a1 = np.tanh(z1)
+        z2 = np.dot(a1, w2) + b2
 
-        # 4. Escolher a ação com maior ativação
-        acao_idx = np.argmax(outputs)
+        # Heurística de Segurança (Evitar Paredes)
+        indices_ordenados = np.argsort(z2)[::-1]
+        melhor_acao_idx = indices_ordenados[0]
 
-        dx, dy = self.acoes_possiveis[acao_idx]
+        if visao:
+            for idx in indices_ordenados:
+                dx, dy = self.acoes_possiveis[idx]
+                try:
+                    if visao[1 + dx][1 + dy] == 0:
+                        melhor_acao_idx = idx
+                        break
+                except:
+                    pass
+
+        dx, dy = self.acoes_possiveis[melhor_acao_idx]
+        self.ultima_acao_vetor = (dx, dy)
+
         return Acao("andar", dx=dx, dy=dy)
 
     def avaliacao_estado_atual(self, recompensa):
-        # O Agente Genético NÃO aprende passo a passo.
-        # Ele só aprende no fim do episódio.
         pass
 
-    # --- MÉTODO NOVO: OBRIGATÓRIO CHAMAR NO FINAL DO EPISÓDIO ---
     def fim_episodio(self, pontuacao_total):
+        # Reset memória de movimento
+        self.ultima_acao_vetor = (0, 0)
+
         if not self.learning_mode:
+            self.celulas_visitadas.clear()
             return
 
-        # 1. Registar performance do indivíduo atual
-        self.fitnesses.append(pontuacao_total)
+        dados = self.observacaofinal.dados
+        dx, dy = dados.get("direcao", (100, 100))
+        distancia = abs(dx) + abs(dy)
+        chegou = (distancia == 0)
+
+        # --- LÓGICA DE FITNESS CORRIGIDA (Adeus Caminhos Longos) ---
+
+        if chegou:
+            # MODO VENCEDOR: Só interessa a Eficiência.
+            # Base 10000 garante que ganham sempre aos perdedores.
+            # Multiplicamos a pontuação por 10 para que cada passo poupado valha muito.
+            # Como pontuacao_total = 100 - (0.1 * passos),
+            # Menos passos = Maior Fitness.
+            fitness = 10000.0 + (pontuacao_total * 10.0)
+        else:
+            # MODO PROCURA: Precisa de incentivos.
+            # Reduzi o bónus de exploração de 5.0 para 1.0.
+            # Assim, explorar é bom, mas não compensa dar voltas enormes.
+            bonus_exploracao = len(self.celulas_visitadas) * 1.0
+            bonus_proximidade = 500.0 / (distancia + 1.0)
+
+            # Adicionamos pontuacao_total (que é negativa) para penalizar inércia
+            fitness = bonus_exploracao + bonus_proximidade + pontuacao_total
+
+            # Clamp a 0 para não estragar a média
+            fitness = max(fitness, 0.0)
+
+        self.fitnesses.append(fitness)
+        self.celulas_visitadas.clear()
         self.individuo_atual += 1
 
-        # 2. Se já testámos todos, criar nova geração
         if self.individuo_atual >= self.pop_size:
             self.nova_geracao()
 
     def nova_geracao(self):
-        # Encontrar o melhor desta geração
         melhor_idx = np.argmax(self.fitnesses)
         self.melhor_cromossoma = self.populacao[melhor_idx].copy()
 
-        print(f"Geração {self.geracao} terminada. Melhor Fitness: {self.fitnesses[melhor_idx]:.2f}")
+        print(
+            f"Gen {self.geracao} | Max Fit: {self.fitnesses[melhor_idx]:.1f} | Avg Fit: {np.mean(self.fitnesses):.1f}")
 
-        nova_pop = []
+        nova_pop = [self.melhor_cromossoma]  # Elitismo
 
-        # ELITISMO: O melhor passa sempre sem alterações
-        nova_pop.append(self.melhor_cromossoma)
+        # Elitismo Top 5 (Para estabilizar)
+        indices_top = np.argsort(self.fitnesses)[-5:]
+        for i in indices_top:
+            if len(nova_pop) < 5:
+                nova_pop.append(self.populacao[i].copy())
 
-        # SELEÇÃO E CRUZAMENTO
         while len(nova_pop) < self.pop_size:
-            # Torneio: Escolher 2 pais aleatórios e ficar com o melhor
             pai1 = self.torneio()
             pai2 = self.torneio()
 
-            # Crossover (Ponto único ou média)
-            filho = (pai1 + pai2) / 2.0
+            mask = np.random.rand(self.genome_size) > 0.5
+            filho = np.where(mask, pai1, pai2)
 
-            # Mutações (Adicionar ruído aleatório)
             if random.random() < self.mutation_rate:
-                ruido = np.random.normal(0, 0.5, size=filho.shape)
-                filho += ruido
+                indices_mut = np.random.choice(self.genome_size, int(self.genome_size * 0.15), replace=False)
+                filho[indices_mut] += np.random.normal(0, 0.5, size=len(indices_mut))
 
             nova_pop.append(filho)
 
@@ -132,29 +200,26 @@ class AgenteGenetico(Agente_Interface):
         self.geracao += 1
 
     def torneio(self):
-        # Escolhe 3 aleatórios e retorna o melhor (para ser pai)
-        indices = random.sample(range(self.pop_size), 3)
+        indices = random.sample(range(self.pop_size), 5)
         scores = [self.fitnesses[i] for i in indices]
-        vencedor = indices[np.argmax(scores)]
-        return self.populacao[vencedor]
+        return self.populacao[indices[np.argmax(scores)]]
 
-    # --- PERSISTÊNCIA ---
-    def record_data(self, ficheiro="genetico_best.json"):
-        # Guardar apenas o melhor cromossoma
-        dados = self.melhor_cromossoma.tolist()  # Converter numpy para lista
-        with open(ficheiro, "w") as f:
-            json.dump(dados, f)
+    def record_data(self, ficheiro=None):
+        if ficheiro is None: ficheiro = self.file
+        dados = self.melhor_cromossoma.tolist()
+        with open(ficheiro, "w") as f: json.dump(dados, f)
         print(f"Melhor genoma guardado em {ficheiro}")
 
-    def load_data(self, ficheiro="genetico_best.json"):
+    def load_data(self, ficheiro=None):
+        if ficheiro is None: ficheiro = self.file
         try:
             with open(ficheiro, "r") as f:
                 dados = json.load(f)
             self.melhor_cromossoma = np.array(dados)
-            self.learning_mode = False  # Assume modo teste
+            self.learning_mode = False
             print("Cérebro Genético carregado!")
         except:
-            print("Erro ao carregar ficheiro genético.")
+            print("Sem cérebro guardado.")
 
     def cria(self, ficheiro):
         pass

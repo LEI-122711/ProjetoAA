@@ -17,14 +17,14 @@ class Simulador:
         simulacao_ativa = True
 
 
-        while simulacao_ativa and self.passo < 200:
+        while simulacao_ativa and self.passo < 150:
             self.passo += 1
 
             self.ambiente.atualizacao()
 
             if self.visualizador is not None:
                 self.visualizador.desenhar()
-                time.sleep(0.1) #alterar tempo para ver as coisas
+                #time.sleep(0.1) #alterar tempo para ver as coisas
 
             todos_terminaram = True
 

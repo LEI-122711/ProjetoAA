@@ -2,6 +2,7 @@ import json
 import re  # Para remover comentários
 import matplotlib.pyplot as plt
 import numpy as np
+from sympy import false
 
 # --- IMPORTS DO PROJETO ---
 from Simulador import Simulador
@@ -16,6 +17,7 @@ from Agentes.AgenteLabirintoQLearning import AgenteLabirintoQLearning
 from Agentes.AgenteFarolQLearning1 import AgenteFarolQLearning
 from Agentes.AgenteLabirinto import AgenteLabirinto
 from Agentes.AgenteFarol1 import AgenteFarol1
+from Agentes.AgenteGenetico import AgenteGenetico
 
 # Sensores
 from Sensores.SensorDirecaoAlvo import SensorDirecaoAlvo
@@ -63,6 +65,29 @@ def get_mapa_labirinto(dificuldade):
             [0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
         ], (0, 0), (9, 10)
+    elif dificuldade == 4:
+        return [
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1],
+            [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+            [0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+            [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0]
+        ], (0, 0), (19, 19)
     return None
 
 
@@ -120,9 +145,14 @@ def criar_agente(config_agente, config_ambiente):
             # Nome automático para Labirinto
             agente.file = f"labirintoQLearning{dif}.json"
 
-        # (Opcional) Se o JSON ainda tiver 'ficheiro_cerebro' explicito, podemos respeitar
-        if "ficheiro_cerebro" in config_agente:
-            agente.file = config_agente["ficheiro_cerebro"]
+
+    elif classe == "AgenteGenetico":
+        agente = AgenteGenetico()
+        if ambiente_tipo == "farol":
+            agente.file = "farolGenetico_Best.json"
+        else:
+            dif = config_ambiente.get("dificuldade", 1)
+            agente.file = f"labirintoGenetico_Best{dif}.json"
 
     elif classe == "AgenteLabirinto":
         agente = AgenteLabirinto()
@@ -187,9 +217,14 @@ def main():
             espreitar = visualizar and ((ep == 0) or (ep == episodios - 1))
 
             sim = Simulador(amb, [agente_principal])
-            sim.visualizador = Visualizador(amb) if espreitar else None
+            sim.visualizador = Visualizador(amb, gravar_gif=False) if espreitar else None
 
             sim.executar_simulacao()
+
+            rec_total = getattr(sim, 'recompensa', getattr(sim, 'recompensa_total', 0))
+
+            if hasattr(agente_principal, 'fim_episodio'):
+                agente_principal.fim_episodio(rec_total)
 
             historico_passos.append(sim.passo)
             # Compatibilidade com diferentes versões do simulador
@@ -198,6 +233,7 @@ def main():
 
             if (ep + 1) % (episodios // 10) == 0:
                 print(f"Ep {ep + 1}: {sim.passo} passos (Eps: {agente_principal.epsilon:.2f})")
+
 
         if hasattr(agente_principal, 'record_data'):
             # Agora ele usa o self.file definido automaticamente na criação
@@ -258,12 +294,22 @@ def main():
                 ag.epsilon = 0.0
 
         sim = Simulador(amb, lista_agentes)
+
         if visualizar:
-            sim.visualizador = Visualizador(amb)
+            sim.visualizador = Visualizador(amb, gravar_gif=True)
 
         sim.executar_simulacao()
         rec_final = getattr(sim, 'recompensa', getattr(sim, 'recompensa_total', 0))
         print(f">>> Resultado Final: {sim.passo} passos | Recompensa: {rec_final}")
+
+        if sim.visualizador and hasattr(sim.visualizador, 'gravar_gif') and sim.visualizador.gravar_gif:
+            tipo_amb = config["ambiente"]["tipo"]
+            dif = config["ambiente"].get("dificuldade", "")
+            str_dif = f"_dif{dif}" if dif else ""
+            nome_agente = lista_agentes[0].__class__.__name__
+
+            nome_ficheiro = f"teste_{tipo_amb}{str_dif}_{nome_agente}.gif"
+            sim.visualizador.salvar_gif(nome_ficheiro)
 
 
 if __name__ == "__main__":
