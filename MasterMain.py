@@ -2,6 +2,7 @@ import json
 import re  # Para remover comentários
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 from sympy import false
 
 # --- IMPORTS DO PROJETO ---
@@ -22,7 +23,6 @@ from Agentes.AgenteGenetico import AgenteGenetico
 # Sensores
 from Sensores.SensorDirecaoAlvo import SensorDirecaoAlvo
 from Sensores.SensorProximidadeObstáculo import SensorProximidadeObstáculo
-from Sensores.SensorLocalFarol import SensorLocalFarol
 
 
 # --- FUNÇÕES AUXILIARES DE MAPA (Do Labirinto) ---
@@ -293,6 +293,18 @@ def main():
                 ag.learning_mode = False
                 ag.epsilon = 0.0
 
+        if len(lista_agentes) == 1:
+            agente_teste = lista_agentes[0]
+            # Verifica se tem q_table (é QLearning)
+            if hasattr(agente_teste, 'q_table'):
+                amb.add_agente(agente_teste)  # Temporário para scan
+                mapa_calor = gerar_heatmap_valor(amb, agente_teste)
+                plotar_heatmap(mapa_calor, titulo=f"Heatmap - {config['ambiente']['tipo']}")
+                # Remove para reiniciar limpo
+                amb.posicoes = {}
+                amb.agentes = []
+                amb.add_agente(agente_teste)
+
         sim = Simulador(amb, lista_agentes)
 
         if visualizar:
@@ -310,6 +322,67 @@ def main():
 
             nome_ficheiro = f"teste_{tipo_amb}{str_dif}_{nome_agente}.gif"
             sim.visualizador.salvar_gif(nome_ficheiro)
+
+
+def gerar_heatmap_valor(ambiente, agente):
+    """
+    Gera uma matriz com o valor máximo Q (a utilidade) de cada célula do mapa.
+    """
+    altura = ambiente.height
+    largura = ambiente.width
+
+    mapa_valores = np.zeros((altura, largura))
+    posicao_original = ambiente.posicoes.get(agente)
+
+    print(">>> A gerar Heatmap de Conhecimento...")
+
+    for x in range(altura):
+        for y in range(largura):
+            # Se for parede, valor nulo
+            if ambiente.mapa[x][y] == 1:
+                mapa_valores[x][y] = np.nan
+                continue
+
+            # Teletransportar agente e ver o que ele acha
+            ambiente.posicoes[agente] = (x, y)
+            obs = ambiente.observacaoPara(agente)
+            agente.observacao(obs)
+
+            try:
+                # Tenta obter estado (compatível com várias versões do agente)
+                try:
+                    estado = agente.get_estado_hash(obs)
+                except TypeError:
+                    estado = agente.get_estado_hash()
+
+                # Ler valor máximo Q
+                if hasattr(agente, 'q_table') and estado in agente.q_table:
+                    max_q = max(agente.q_table[estado])
+                    mapa_valores[x][y] = max_q
+                else:
+                    mapa_valores[x][y] = 0.0
+            except Exception:
+                mapa_valores[x][y] = 0.0
+
+    # Restaurar posição original
+    if posicao_original:
+        ambiente.posicoes[agente] = posicao_original
+
+    return mapa_valores
+
+
+def plotar_heatmap(mapa_valores, titulo="Mapa de Calor (Max Q-Values)"):
+    plt.figure(figsize=(8, 6))
+    try:
+        sns.heatmap(mapa_valores, cmap="viridis", annot=False, fmt=".1f", cbar_kws={'label': 'Valor Esperado (Q)'})
+    except NameError:
+        plt.imshow(mapa_valores, cmap='viridis', interpolation='nearest')
+        plt.colorbar(label='Valor Esperado (Q)')
+
+    plt.title(titulo)
+    plt.xlabel("Y (Colunas)")
+    plt.ylabel("X (Linhas)")
+    plt.show()
 
 
 if __name__ == "__main__":
