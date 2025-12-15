@@ -24,7 +24,7 @@ class Simulador:
 
             if self.visualizador is not None:
                 self.visualizador.desenhar()
-                #time.sleep(0.2) #alterar tempo para ver as coisas
+                time.sleep(0.1) #alterar tempo para ver as coisas
 
             todos_terminaram = True
 

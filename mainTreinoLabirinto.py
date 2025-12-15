@@ -117,8 +117,8 @@ def executar_treino_completo():
     eps_dificil = 20000
 
     #hist1 = treinar_nivel(1, eps_facil)
-    hist2 = treinar_nivel(2, eps_medio)
-    #hist3 = treinar_nivel(3, eps_dificil)
+    #hist2 = treinar_nivel(2, eps_medio)
+    hist3 = treinar_nivel(3, eps_dificil)
 
     print("treino feito")
 
@@ -136,8 +136,8 @@ def executar_treino_completo():
     #cada gráfico para cada treino
 
     #plot_suave(ax1, hist1, "Nível 1 (Fácil)")
-    plot_suave(ax2, hist2, "Nível 2 (Médio)")
-    #plot_suave(ax3, hist3, "Nível 3 (Difícil)")
+    #plot_suave(ax2, hist2, "Nível 2 (Médio)")
+    plot_suave(ax3, hist3, "Nível 3 (Difícil)")
 
     plt.tight_layout()
     plt.show()
