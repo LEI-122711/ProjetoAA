@@ -9,12 +9,12 @@
     "//_AMBIENTE": "--- CONFIGURAÇÃO DO MUNDO ---",
     "ambiente": {
         "//_TIPO": "Opções: 'farol' ou 'labirinto'",
-        "tipo": "labirinto",
+        "tipo": "farol",
 
         "//_DIFICULDADE": "Apenas para Labirinto: 1 (Fácil), 2 (Médio), 3 (Difícil)",
         "dificuldade": 3,
 
-        "//_OBSTACULOS_FAROL": "Apenas para Farol: Lista de coordenadas [x, y],adicionar [9,7] e [1,3] para teste",
+        "//_OBSTACULOS_FAROL": "Apenas para Farol: Lista de coordenadas [x, y],adicionar [9,7],[1,3] e [0,3] para teste",
         "obstaculos_extra": [[8, 7], [7, 7], [6, 7],[3,3],[2,3],[4,3]]
     },
 
@@ -22,12 +22,11 @@
     "agentes": [
         {
             "//_CLASSE": "Opções: 'AgenteQLearning', 'AgenteLabirinto', 'AgenteFarol1'",
-            "classe": "AgenteLabirinto",
+            "classe": "AgenteQLearning",
 
             "//_PARAMETROS": "Usado apenas se for QLearning",
             "learning_rate": 0.1,
             "discount_factor": 0.9
-
         }
     ],
 
