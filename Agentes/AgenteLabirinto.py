@@ -1,3 +1,4 @@
+import random
 from Agentes.Agent_Interface import Agente_Interface
 from Acao import Acao
 
@@ -8,16 +9,15 @@ class AgenteLabirinto(Agente_Interface):
         super().__init__()
         self.observacaofinal = None
 
-        # Bússola 8 direções (Sentido Horário)
-        # 0:Norte, 1:NE, 2:Este, 3:SE, 4:Sul, 5:SO, 6:Oeste, 7:NO
-        self.bussola = [
-            (-1, 0), (-1, 1), (0, 1), (1, 1),
-            (1, 0), (1, -1), (0, -1), (-1, -1)
-        ]
+        # Estado: Qual a parede que estou a "tocar" atualmente?
+        # Pode ser: None, (0, -1)[Esq], (0, 1)[Dir], (-1, 0)[Cima], (1, 0)[Baixo]
+        self.parede_focada = None
 
-        # Estado Interno
-        self.encontrou_parede = False
-        self.heading_idx = 0  # Para onde estou virado (Índice da bússola)
+        # Definição das 8 direções para movimento aleatório
+        self.direcoes_possiveis = [
+            (-1, 0), (1, 0), (0, -1), (0, 1),
+            (-1, 1), (-1, -1), (1, 1), (1, -1)
+        ]
 
     def cria(self, ficheiro: str):
         pass
@@ -25,11 +25,12 @@ class AgenteLabirinto(Agente_Interface):
     def observacao(self, observacao):
         self.observacaofinal = observacao
 
-    def _obter_indice_bussola(self, vetor):
-        """Converte vetor (dx,dy) em índice da bússola (0-7)"""
-        if vetor in self.bussola:
-            return self.bussola.index(vetor)
-        return 0  # Default
+    def _tem_parede_em(self, visao, dx, dy):
+        """Verifica se há parede (1) na posição relativa dx, dy"""
+        try:
+            return visao[1 + dx][1 + dy] == 1
+        except IndexError:
+            return True
 
     def age(self):
         if self.observacaofinal is None:
@@ -37,62 +38,66 @@ class AgenteLabirinto(Agente_Interface):
 
         dados = self.observacaofinal.dados
         dx_meta, dy_meta = dados.get("direcao", (0, 0))
-        visao = dados.get("visao")  # Matriz 3x3
+        visao = dados.get("visao")
 
-        if visao is None:
-            return Acao("andar", dx=0, dy=0)
+        if visao is None: return Acao("andar", dx=0, dy=0)
 
-        # Se chegou ao objetivo, para
         if dx_meta == 0 and dy_meta == 0:
             return Acao("andar", dx=0, dy=0)
 
-        # --- FASE 1: MODO LIVRE (Ir direto ao GPS) ---
-        if not self.encontrou_parede:
-            # Verifica se o movimento do GPS é válido (Livre = 0)
-            # O agente está em visao[1][1]. Alvo é visao[1+dx][1+dy]
+        if self.parede_focada is None:
+            paredes_vizinhas = []
+            if self._tem_parede_em(visao, -1, 0): paredes_vizinhas.append((-1, 0))
+            if self._tem_parede_em(visao, 1, 0):  paredes_vizinhas.append((1, 0))
+            if self._tem_parede_em(visao, 0, -1): paredes_vizinhas.append((0, -1))
+            if self._tem_parede_em(visao, 0, 1):  paredes_vizinhas.append((0, 1))
 
-            # Se o GPS for (0,0) ou inválido, ignora
-            if (dx_meta, dy_meta) == (0, 0):
+            if not paredes_vizinhas:
+                dx, dy = random.choice(self.direcoes_possiveis)
+                if visao[1 + dx][1 + dy] == 0:
+                    return Acao("andar", dx=dx, dy=dy)
+                else:
+                    return Acao("andar", dx=0, dy=0)
+            else:
+                self.parede_focada = random.choice(paredes_vizinhas)
                 return Acao("andar", dx=0, dy=0)
 
-            try:
-                if visao[1 + dx_meta][1 + dy_meta] == 0:
-                    # Caminho livre! Atualiza a nossa "frente" e anda.
-                    self.heading_idx = self._obter_indice_bussola((dx_meta, dy_meta))
-                    return Acao("andar", dx=dx_meta, dy=dy_meta)
-                else:
-                    # BATEU! Ativar Modo "Seguir Parede"
-                    self.encontrou_parede = True
-                    # A nossa "frente" passa a ser a direção onde batemos
-                    self.heading_idx = self._obter_indice_bussola((dx_meta, dy_meta))
-            except IndexError:
-                pass
 
-        # --- FASE 2: MODO SEGUIR PAREDE (Right-Hand Rule) ---
-        if self.encontrou_parede:
-            # A lógica é varrer as direções começando pela nossa DIREITA.
-            # Num relógio, a Direita (90º) é o índice atual + 2.
-            # Vamos testar: Direita -> Frente-Direita -> Frente -> Frente-Esquerda -> Esquerda...
+        else:
+            px, py = self.parede_focada
 
-            start_scan = (self.heading_idx + 2) % 8
+            dx_move, dy_move = 0, 0
+            novo_foco_canto = None  # Qual será a parede depois de dobrar a esquina?
 
-            for i in range(8):
-                # Varrer no sentido anti-horário (para a esquerda) a partir da direita
-                idx_teste = (start_scan - i) % 8
+            if self.parede_focada == (0, -1):  # Parede Esquerda -> Move Baixo
+                dx_move, dy_move = 1, 0
+                novo_foco_canto = (-1, 0)  # Nova parede: Cima
+            elif self.parede_focada == (0, 1):  # Parede Direita -> Move Cima
+                dx_move, dy_move = -1, 0
+                novo_foco_canto = (1, 0)  # Nova parede: Baixo
+            elif self.parede_focada == (1, 0):  # Parede Baixo -> Move Direita
+                dx_move, dy_move = 0, 1
+                novo_foco_canto = (0, -1)  # Nova parede: Esquerda
+            elif self.parede_focada == (-1, 0):  # Parede Cima -> Move Esquerda
+                dx_move, dy_move = 0, -1
+                novo_foco_canto = (0, 1)  # Nova parede: Direita
 
-                dx, dy = self.bussola[idx_teste]
+            # verificar canto extero
+            check_x = px + dx_move
+            check_y = py + dy_move
 
-                try:
-                    if visao[1 + dx][1 + dy] == 0:
-                        # Encontrou passagem!
-                        # Atualiza a orientação para a nova direção e move-se
-                        self.heading_idx = idx_teste
-                        return Acao("andar", dx=dx, dy=dy)
-                except IndexError:
-                    pass
+            if not self._tem_parede_em(visao, check_x, check_y):
+                self.parede_focada = novo_foco_canto
 
-        # Se tudo falhar (encurralado), tenta ficar parado
-        return Acao("andar", dx=0, dy=0)
+                return Acao("andar", dx=check_x, dy=check_y)
+
+            # canto interno
+            if self._tem_parede_em(visao, dx_move, dy_move):
+                self.parede_focada = (dx_move, dy_move)
+                return Acao("andar", dx=0, dy=0)
+
+            #caminho livre
+            return Acao("andar", dx=dx_move, dy=dy_move)
 
     def avaliacao_estado_atual(self, recompensa: float):
         pass

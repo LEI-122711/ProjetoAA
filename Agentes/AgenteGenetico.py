@@ -18,10 +18,9 @@ class AgenteGenetico(Agente_Interface):
         self.geracao = 1
         self.individuo_atual = 0
 
-        # --- MEMÓRIA DE EXPLORAÇÃO ---
         self.celulas_visitadas = set()
 
-        # Inputs: 2 (GPS) + 9 (Visão) + 2 (Memória Ação) = 13
+        # inputs: 2 (gps) + 9 (visão) + 2 (memória ação) = 13
         self.input_size = 13
         self.hidden_size = 20
         self.output_size = 8
@@ -137,10 +136,9 @@ class AgenteGenetico(Agente_Interface):
         distancia = abs(dx) + abs(dy)
         chegou = (distancia == 0)
 
-        # --- LÓGICA DE FITNESS CORRIGIDA (Adeus Caminhos Longos) ---
-
+        # fitness
         if chegou:
-            # MODO VENCEDOR: Só interessa a Eficiência.
+            # MODO VENCEDOR, só interessa a Eficiência.
             # Base 10000 garante que ganham sempre aos perdedores.
             # Multiplicamos a pontuação por 10 para que cada passo poupado valha muito.
             # Como pontuacao_total = 100 - (0.1 * passos),
@@ -148,8 +146,6 @@ class AgenteGenetico(Agente_Interface):
             fitness = 10000.0 + (pontuacao_total * 10.0)
         else:
             # MODO PROCURA: Precisa de incentivos.
-            # Reduzi o bónus de exploração de 5.0 para 1.0.
-            # Assim, explorar é bom, mas não compensa dar voltas enormes.
             bonus_exploracao = len(self.celulas_visitadas) * 1.0
             bonus_proximidade = 500.0 / (distancia + 1.0)
 

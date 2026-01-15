@@ -59,7 +59,6 @@ class AgenteLabirintoQLearning(Agente_Interface):
         # melhor q-value
         else:
             max_val = max(q_valores)
-            # desempate aleatório se dois tiverem o mesmo valor
             melhores_indices = [i for i, v in enumerate(q_valores) if v == max_val]
             acao_idx = random.choice(melhores_indices)
 
@@ -103,7 +102,6 @@ class AgenteLabirintoQLearning(Agente_Interface):
             with open(ficheiro, "r") as f:
                 dados_str = json.load(f)
             # Converter strings de volta para tuplos
-            # eval() é um truque rápido para converter "(1,0)" em tuplo (1,0)
             self.q_table = {eval(k): v for k, v in dados_str.items()}
             self.learning_mode = False
             self.epsilon = 0.0

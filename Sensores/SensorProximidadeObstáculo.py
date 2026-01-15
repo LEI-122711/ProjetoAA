@@ -28,9 +28,11 @@ class SensorProximidadeObstáculo(Sensor_Interface):
 
         novos_dados["visao"] = visao
 
+
         # O agente recebe APENAS esta matriz 3x3
         return Observacao(novos_dados)
 
-        # Exemplo de saida: [[0, 0, 1], [0, 0, 0], [1, 1, 1]]
-        # Significa: Parede à direita e paredes em baixo.
+        # Exemplo: [[0, 0, 1], [0, 0, 0], [1, 1, 1]]
+        # Significa: Parede a NORDESTE (canto superior direito) e paredes em baixo.
+        # A direita imediata está livre.
 

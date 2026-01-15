@@ -35,8 +35,7 @@ class AgenteFarol1(Agente_Interface):
         except ValueError:
             start_idx = 0
 
-        # se a direção inicial estiver bloqueada (evitar paredes)
-        # roda 45 graus, tenta outra d, repete ate 8 vezes
+        # se a direção inicial estiver bloqueada (evitar paredes), roda 45 graus, tenta outra direçãoo, repete ate 8 vezes
         for i in range(8):
             idx_atual = (start_idx + i) % 8
             dx, dy = self.bussola[idx_atual]

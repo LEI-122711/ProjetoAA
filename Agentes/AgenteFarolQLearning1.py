@@ -95,8 +95,7 @@ class AgenteFarolQLearning(Agente_Interface):
         try:
             with open(ficheiro, "r") as f:
                 dados_str = json.load(f)
-            # Converter strings de volta para tuplos
-            # eval() é um truque rápido para converter "(1,0)" em tuplo (1,0)
+            # converter strings de volta para tuplos
             self.q_table = {eval(k): v for k, v in dados_str.items()}
             self.learning_mode = False
             self.epsilon = 0.0
